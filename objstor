@@ -1,0 +1,14 @@
+# Basic authentication
+curl -i -H "X-Auth-Key: $OBJSTOR_APIKEY" -H "X-Auth-User: $OBJSTOR_USER" https://CLUSTER.objectstorage.softlayer.net/auth/v1.0/
+
+# Check content type of object
+curl -H 'X-Auth-Token: $TOKEN_FROM_AUTH_COMMAND' https://$URL_FROM_AUTH_COMMAND/Container/example.iso -I
+
+# List containers
+curl -H 'X-Auth-Token: $TOKEN_FROM_AUTH_COMMAND' https://$URL_FROM_AUTH_COMMAND
+
+# List contents of a container
+curl -H 'X-Auth-Token: $TOKEN_FROM_AUTH_COMMAND' https://$URL_FROM_AUTH_COMMAND/Container/
+
+# Manually import ISO:
+curl -sk https://$API_USER:$API_KEY@api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/createFromExternalSource.json -X POST -d '{"parameters": [{"name": "Name", "uri": "swift://$OBJSTOR_USER@CLUSTER/CONTAINER/example.iso"}]}'
