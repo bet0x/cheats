@@ -12,3 +12,6 @@ curl -H 'X-Auth-Token: $TOKEN_FROM_AUTH_COMMAND' https://$URL_FROM_AUTH_COMMAND/
 
 # Manually import ISO:
 curl -sk https://$API_USER:$API_KEY@api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest_Block_Device_Template_Group/createFromExternalSource.json -X POST -d '{"parameters": [{"name": "Name", "uri": "swift://$OBJSTOR_USER@CLUSTER/CONTAINER/example.iso"}]}'
+
+# Add a new container
+curl -i -XPUT -H "X-Auth-Token: $TOKEN_FROM_AUTH_COMMAND" https://$URL_FROM_AUTH_COMMAND//container2
