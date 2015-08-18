@@ -1,0 +1,14 @@
+# Access logs and user actions
+/usr/local/cpanel/logs/access_log
+
+# Account transfers and misc. logs
+/var/cpanel/logs
+
+# Auditing log (account creations, deletions, etc)
+/var/cpanel/accounting.log
+
+# Backup logs
+/usr/local/cpanel/logs/cpbackup
+
+# Brute force protection (cphulkd) log
+/usr/local/cpanel/logs/cphulkd.log
