@@ -1,0 +1,64 @@
+# Fsck/Rescue Layer
+Issue the mount command to make sure nothing is mounted other than the rescue layer (to list partitions)
+
+	fdisk - l
+One of these *Should* list the label of each partition (adjust as needed for device id style/filesystem)
+
+	for X in /dev/sda?; do echo -n "$X "; e2label $X; done
+	for X in /dev/xvdb?; do echo -n "$X "; e4label $X; done
+	for X in /dev/sda?; do echo -n "$X "; blkid $X; done
+
+Proceed with fsck on needed partitions  
+
+    fsck -y -C /dev/sda#
+
+### Fsck all partitions
+
+	for i in `fdisk -l|grep Linux|grep -v [sS]wap|grep -o '[shxv]\+d[a-z][0-9]'`;do time fsck -y /dev/"$i";done &>; fsck.out &
+
+### CCI Bypass FSCK
+To bypass a file system check on a CCI if the root password works do the following:  
+
+* Login with the password in the kvm
+* mount -o remount,rw / /  
+* Edit fstab to change the last number to a 0  
+* Reboot  
+
+Once it boots back up change the entry in the fstab file back to 1
+
+### Find drive info
+List by UUID  
+
+	blkid /dev/sd#
+Find if drives are using e2label  
+
+	for X in /dev/sda?; do echo -n "$X "; e2label $X; done
+Find if drives are using e4label
+
+	for X in /dev/xvdb?; do echo -n "$X "; e4label $X; done
+Find all partions on the server
+	for i in `fdisk -l|grep Linux|grep -v [sS]wap|grep -o '[shxv]\+d[a-z][0-9]'`;do echo -n "$i "; blkid $i; done
+
+### Chroot in rescue
+For the sake of the example /dev/sda2 is /  
+
+	mount /dev/sda2 /mnt
+Mount others if needed  
+
+	mount /dev/sda$ /mnt/usr
+    mount /dev/sda$ /mnt/var
+Now mount the system level partitions and chroot
+
+	mount --bind /dev /mnt/dev  
+	mount --bind /sys /mnt/sys  
+	mount --bind /proc /mnt/proc  
+	chroot /mnt
+
+### Remove and rebuild journal
+
+	fsck -y -C /dev/sda$  
+	tune2fs -O ^has_journal /dev/sda$
+	fsck -y -C /dev/sda$  
+	tune2fs -j /dev/sda$  
+	fsck -y -C /dev/sda$  </code></pre>
+	Reboot and cross fingers
