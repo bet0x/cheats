@@ -1,0 +1,15 @@
+# Check UFW firewall status
+ufw status
+
+# To start and stop the firewall
+ufw enable
+ufw disable
+
+# To allow a service though the firewall (in this case SSH)
+ufw allow ssh
+
+# Allow specific protocal on port
+ufw allow 3333/tcp
+
+
+[UFW Examples](https://www.digitalocean.com/community/articles/how-to-setup-a-firewall-with-ufw-on-an-ubuntu-and-debian-cloud-server)
