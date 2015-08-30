@@ -1,2 +1,11 @@
 ## Use dd to write a file
 dd if=/dev/urandom of=4Gfile bs=40048576 count=100
+
+## Get version and arch from rpm 
+touch .rpmmacros && echo %_query_all_fmt %%{name}-%%{version}-%%{release}.%%{arch} > ~/.rpmmacros
+
+## Email find command:
+find -type f -exec grep -o "From:.*" {} + | awk -F"From:" '{print$2}' | sort | uniq -c | sort -rn | head -50
+
+## Another netstat thing for connected status
+netstat -an | awk '/tcp/ {print $5":"$6}'| grep -v 0.0.0.0 | grep -v :: | cut -d: -f1,3 --output-delimiter=" " | sort | uniq -c | sort -n | awk '{print $2" is connected "$1" in state: "$3}'
