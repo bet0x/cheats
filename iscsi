@@ -1,0 +1,2 @@
+# Grab auth details from iscsid file:
+sed '/^\#/d'|  egrep 'authmethod|username|password' /etc/iscsi/iscsid.conf

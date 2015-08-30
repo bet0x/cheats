@@ -1,0 +1,2 @@
+## Use dd to write a file
+dd if=/dev/urandom of=4Gfile bs=40048576 count=100
