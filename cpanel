@@ -1,94 +1,66 @@
-# Access logs and user actions
-/usr/local/cpanel/logs/access_log
-
-# Account transfers and misc. logs
-/var/cpanel/logs
-
-# Auditing log (account creations, deletions, etc)
-/var/cpanel/accounting.log
-
-# Backup logs
-/usr/local/cpanel/logs/cpbackup
-
-# Brute force protection (cphulkd) log
-/usr/local/cpanel/logs/cphulkd.log
-
 ## Scripts
-Check latest version of EasyApache
+# Check latest version of EasyApache
+/scripts/easyapache --latest-versions
 
-	/scripts/easyapache --latest-versions
-Update cpanel
+# Update cpanel
+/scripts/upcp
 
-	/scripts/upcp
-Verify License
+# Verify License
+/usr/local/cpanel/cpkeyclt
 
-	/usr/local/cpanel/cpkeyclt
-Check what account owns a domain
+# Check what account owns a domain
+/scripts/whoowns domain.com
 
-	/scripts/whoowns domain.com
-Check cpanel users virtualhost information (deprecated as of 11.38)
+# Check cpanel users virtualhost information (deprecated as of 11.38)
+/scripts/uf cpaneluser
 
-	/scripts/uf cpaneluser
-Do the hostname check
-	
-	 /scripts/ipcheck --verbose
+# Do the hostname check
+/scripts/ipcheck --verbose
 
 ## Cphulk
-Disable/enable
+# Disable/enable
+/usr/local/cpanel/bin/cphulk_pam_ctl --disable
+/usr/local/cpanel/bin/cphulk_pam_ctl --enabled
 
-	/usr/local/cpanel/bin/cphulk_pam_ctl --disable
-	/usr/local/cpanel/bin/cphulk_pam_ctl --enabled
-Clear the cphulk db manually
+# Clear the cphulk db manually
 
 	mysql
 	connect cphulkd;
 	delete from brutes;
 	delete from logins;
-	quit 
+	quit
 
 ## SSL
-Regenerate default service SSL's  
+Regenerate default service SSL's
 
-1. Log into WHM (port 2087)  
-1. Go to service configuration  
-1. Click on Manage Service SSL Certificates  
-1. Click on Reset Certificate for each certificate  
+1. Log into WHM (port 2087)
+1. Go to service configuration
+1. Click on Manage Service SSL Certificates
+1. Click on Reset Certificate for each certificate
 
 ## Statistics
-Re-run all stats for the users:
-
-	for each in `ls /var/cpanel/users|grep -v system`; do echo $each; /scripts/fixwebalizer $each; done
+# Re-run all stats for the users:
+for each in `ls /var/cpanel/users|grep -v system`; do echo $each; /scripts/fixwebalizer $each; done
 
 ## Email
-Check for spam being sent from Authenticated users
-<pre><code>for each in `find /var/spool/exim/input/ -type f -name "*-H"` ; do egrep "auth_" $each && egrep "To: " $each && egrep "Subject: " $each && echo $each | cut -d "/" -f 7- | cut -d "-" -f -3 && echo ;
-done</code></pre>
-Check for scripts that are sending from a users home directory
+# Check for spam being sent from Authenticated users
+for each in `find /var/spool/exim/input/ -type f -name "*-H"` ; do egrep "auth_" $each && egrep "To: " $each && egrep "Subject: " $each && echo $each | cut -d "/" -f 7- | cut -d "-" -f -3 && echo ;done
 
-	cat /var/log/exim_mainlog|grep -v '/var/spool/exim'|grep -v 'exim -bpc' | egrep '/home/user
+# Check for scripts that are sending from a users home directory
+cat /var/log/exim_mainlog|grep -v '/var/spool/exim'|grep -v 'exim -bpc' | egrep '/home/user
+grep -i "term" /var/log/exim_mainlog | awk '{print $1 " " $3}' | grep -v SMTP
 
-	grep -i "term" /var/log/exim_mainlog | awk '{print $1 " " $3}' | grep -v SMTP
+# Check for email account password changes (Password change audit)
+grep passwdpop /usr/local/cpanel/logs/access_log | grep HIDDEN | sed "s/\(.*\)\"GET .*email=\(.*\)&domain=\(.*\)&.*&.*/\1\2@\3/g"
 
-
-Check for email account password changes (Password change audit)
-
-	grep passwdpop /usr/local/cpanel/logs/access_log | grep HIDDEN | sed "s/\(.*\)\"GET .*email=\(.*\)&domain=\(.*\)&.*&.*/\1\2@\3/g"
-Additional scripts for spam investigation/email issues
-	
-	grep -A 1 'cwd=/home' /var/log/exim_mainlog | egrep -B 1 "<=" | grep -A1 boudreau
-
-	egrep -o '([0-9a-zA-Z]+[-._+&])*[0-9a-zA-Z]+@([-0-9a-zA-Z]+[.])+[a-zA-Z]{2,6}' /var/log/exim_mainlog | grep --file=<(awk -F: '/[.]/{print $1}' /etc/userdomains) | sort | uniq -c | sort -nk 1
-
-	grep -i "gmail" /var/log/exim_mainlog | awk '{print $1 " " $3}' | grep -v SMTP
-
-	grep cwd /var/log/exim_mainlog | grep -v /var/spool | awk -F"cwd=" '{print $2}' | awk '{print $1}' | sort | uniq -c | sort -n
-
-[Determining spam source](https://forums.cpanel.net/f185/determining-spam-source-227612.html)  
-[Tracking outbound spam](http://www.configserver.com/free/spammers.html#outbound)
+# Additional scripts for spam investigation/email issues
+- grep -A 1 'cwd=/home' /var/log/exim_mainlog | egrep -B 1 "<=" | grep -A1 boudreau
+- egrep -o '([0-9a-zA-Z]+[-._+&])*[0-9a-zA-Z]+@([-0-9a-zA-Z]+[.])+[a-zA-Z]{2,6}' /var/log/exim_mainlog | grep --file=<(awk -F: '/[.]/{print $1}' /etc/userdomains) | sort | uniq -c | sort -nk 1
+- grep -i "gmail" /var/log/exim_mainlog | awk '{print $1 " " $3}' | grep -v SMTP
+- grep cwd /var/log/exim_mainlog | grep -v /var/spool | awk -F"cwd=" '{print $2}' | awk '{print $1}' | sort | uniq -c | sort -n
 
 ## Mod Security
-How to turn  it off for a single domain
-
+# How to turn  it off for a single domain
 	echo "
     <IfModule mod_security.c>
     SecFilterEngine Off
@@ -96,24 +68,21 @@ How to turn  it off for a single domain
     " >>     /usr/local/apache/conf/userdata/std/2/cpaneluser/domain.com/mod_security.conf
     /scripts/ensure_vhost_includes --user=cpaneluser
 
-
-
 ## Semaphores
-A semaphore is an inter-process communication tool that is used by Apache to communicate with its child processes. Semaphore marks memory locations as locked and may not release it upon completion of process. In most case, if parent process dies before the child.
+# A semaphore is an inter-process communication tool that is used by Apache to communicate with its child processes. Semaphore marks memory locations as locked and may not release it upon completion of process. In most case, if parent process dies before the child.
 
-	semaphores - ipcs -s | grep apache | cut -d " " -f2 | xargs ipcrm sem
-	ipcs -s | grep nobody | perl -e ‘while (<STDIN>) { @a=split(/\s+/); print `ipcrm sem $a[1]`}’
-	
+semaphores - ipcs -s | grep apache | cut -d " " -f2 | xargs ipcrm sem
+ipcs -s | grep nobody | perl -e ‘while (<STDIN>) { @a=split(/\s+/); print `ipcrm sem $a[1]`}’
+
 ## Account Creation/Termination
-Check for account creation/terminatoin date
-
-	grep cpaneluser /var/cpanel/accounting.log
+# Check for account creation/terminatoin date
+grep cpaneluser /var/cpanel/accounting.log
 
 ## Log Rotation
-[cPanel guide for Log Rotation](http://docs.cpanel.net/twiki/bin/view/AllDocumentation/WHMDocs/LogRotate)  
+[cPanel guide for Log Rotation](http://docs.cpanel.net/twiki/bin/view/AllDocumentation/WHMDocs/LogRotate)
 [Fix broken log rotation](http://www.crucialp.com/resources/tutorials/dedicated-server/fix-log-rotation-problems.php)
 
-If munin logs are not being rotated properly you can add the following script to correct that. This essentially allows the log files to grow up to 50M before rotating them. 
+If munin logs are not being rotated properly you can add the following script to correct that. This essentially allows the log files to grow up to 50M before rotating them.
 Create a file named "munin" within /etc/logrotate.d and put in the following code:
 
 	/var/log/munin/*log {
@@ -130,141 +99,121 @@ Create a file named "munin" within /etc/logrotate.d and put in the following cod
 	}
 
 ## Logs
-Apache:
+# Apache:
+/usr/local/apache/logs/access_log
+/usr/local/apache/logs/error_log
 
-	/usr/local/apache/logs/access_log
-	/usr/local/apache/logs/error_log
+# Apache domlogs:
+/usr/local/apache/domlogs/example.com
 
-Apache domlogs:
+# Apache SUEXEC Logs:
+/usr/local/apache/logs/suexec_log
 
-	/usr/local/apache/domlogs/example.com
+# MySQL
+/var/lib/mysql/hostname.err
 
-Apache SUEXEC Logs:
+# BIND (named) Log:
+/var/log/messages
 
-	/usr/local/apache/logs/suexec_log
+# Exim
+/var/log/exim_mainlog
+/var/log/exim_paniclog
+/var/log/exim_rejectlog
 
-MySQL
+#Courier or Dovecot IMAP
+/var/log/maillog
 
-	/var/lib/mysql/hostname.err
+# Tomcat Logs:
+/usr/local/jakarta/tomcat/logs/catalina.err
+/usr/local/jakarta/tomcat/logs/catalina.out
 
-BIND (named) Log:
-	
-	/var/log/messages
+# cPanel Access Log:
+/usr/local/cpanel/logs/access_log
 
-Exim
+# cPanel Error Log:
+/usr/local/cpanel/logs/error_log
 
-	/var/log/exim_mainlog
-	/var/log/exim_paniclog
-	/var/log/exim_rejectlog
+# cPanel License Log:
+/usr/local/cpanel/logs/license_log
 
-Courier or Dovecot IMAP
+# Stats Execution Logs:
+/usr/local/cpanel/logs/stats_log
 
-	/var/log/maillog
+# ChkServd (cPanel Monitoring Daemon) Logs:
+/var/log/chkservd.log
 
-Tomcat Logs:
+# cPHulkd
+/usr/local/cpanel/logs/cphulkd.log
 
-	/usr/local/jakarta/tomcat/logs/catalina.err
-	/usr/local/jakarta/tomcat/logs/catalina.out
+# cPanel Backup Logs:
+/usr/local/cpanel/logs/cpbackup/*.log
 
-cPanel Access Log:
+# Pure-FTP
+/var/log/messages
+/var/log/xferlog (symlinked to /usr/local/apache/domlogs/ftpxferlog)
 
-	/usr/local/cpanel/logs/access_log
+# Cron Logs:
+/var/log/cron
 
-cPanel Error Log:
+# SSH Logs:
+/var/log/secure
 
-	/usr/local/cpanel/logs/error_log
+# ModSecurity:
+/usr/local/apache/logs/modsec_audit.log
+/usr/local/apache/logs/modsec_debug_log
 
-cPanel License Log:
+# Access logs and user actions
+/usr/local/cpanel/logs/access_log
 
-	/usr/local/cpanel/logs/license_log
+# Account transfers and misc. logs
+/var/cpanel/logs
 
-Stats Execution Logs:
+# Auditing log (account creations, deletions, etc)
+/var/cpanel/accounting.log
 
-	/usr/local/cpanel/logs/stats_log
+# Backup logs
+/usr/local/cpanel/logs/cpbackup
 
-ChkServd (cPanel Monitoring Daemon) Logs:
+# Brute force protection (cphulkd) log
+/usr/local/cpanel/logs/cphulkd.log
 
-	/var/log/chkservd.log
+# Check Access Log for a specific time
+grep Oct/2013 /usr/local/apache/logs/access_log | awk '{ print $1 }' | sort -n | uniq -c | sort -rn
 
-cPHulkd
+## Apache
+#To list Apache Modules
+/usr/local/apache/bin/httpd -D DUMP_MODULES
+/usr/local/apache/bin/httpd -l
 
-	/usr/local/cpanel/logs/cphulkd.log
+## Mysql
+mysqladmin proc | sed -e 's/|//g' -e '/-/d' | awk '{print $2}' | sort | uniq -c | sort -nk 1
 
-cPanel Backup Logs:
+## PHP
+# Show the current PHP handler for Apache
+/usr/local/cpanel/bin/rebuild_phpconf --current
 
-	/usr/local/cpanel/logs/cpbackup/*.log
+# Set PHP handler
+/usr/local/cpanel/bin/rebuild_phpconf DEFAULTPHP PHP4_Handler PHP5_Handler SUEXEC
 
-Pure-FTP
-
-	/var/log/messages
-	/var/log/xferlog (symlinked to /usr/local/apache/domlogs/ftpxferlog)
-
-Cron Logs:
-
-	/var/log/cron
-
-SSH Logs:
-
-	/var/log/secure
-
-ModSecurity:
-
-	/usr/local/apache/logs/modsec_audit.log
-	/usr/local/apache/logs/modsec_debug_log
-
-
-Check Access Log for a specific time
-
-	grep Oct/2013 /usr/local/apache/logs/access_log | awk '{ print $1 }' | sort -n | uniq -c | sort -rn
-
-# Apache
-To list Apache Modules 
-	
-	/usr/local/apache/bin/httpd -D DUMP_MODULES
-	/usr/local/apache/bin/httpd -l
-
-
-# Mysql
-
-	 mysqladmin proc | sed -e 's/|//g' -e '/-/d' | awk '{print $2}' | sort | uniq -c | sort -nk 1
-
-[Move Mysql 1](http://forums.cpanel.net/f5/move-var-lib-mysql-71424.html)
-
-[Move Mysql 2](http://forums.cpanel.net/f354/move-mysql-databases-6655.html)
-
-# PHP
-Show the current PHP handler for Apache
-	/usr/local/cpanel/bin/rebuild_phpconf --current
-Set PHP handler
-	
-	/usr/local/cpanel/bin/rebuild_phpconf DEFAULTPHP PHP4_Handler PHP5_Handler SUEXEC
-To set PHP 5 as the default PHP version, set no handler for PHP4, set suphp for PHP5 and enable suexec you would run the following
-
-	/usr/local/cpanel/bin/rebuild_phpconf 5 none suphp 1
-
+# To set PHP 5 as the default PHP version, set no handler for PHP4, set suphp for PHP5 and enable suexec you would run the following
+/usr/local/cpanel/bin/rebuild_phpconf 5 none suphp 1
 
 ## Backups
-Find backups for all users
-	awk '{ print $2 }' /etc/trueuserdomains | sort | uniq | while read user ; do find /backup/ -type f -print; done
-New backups script for cPanel 
+# Find backups for all users
+awk '{ print $2 }' /etc/trueuserdomains | sort | uniq | while read user ; do find /backup/ -type f -print; done
 
-	/usr/local/cpanel/bin/backup
+# New backups script for cPanel
+/usr/local/cpanel/bin/backup
 
-Package all accounts on the server
-
-	 for i in $(ls /var/cpanel/users | cut -d / -f 5); do /scripts/pkgacct $i /backupfolder; done
-
+# Package all accounts on the server
+for i in $(ls /var/cpanel/users | cut -d / -f 5); do /scripts/pkgacct $i /backupfolder; done
 
 ## Random
-List all users under /home
-	
-	exec ls /home/ | sed 's/\([0-9]\+\).*/\1/g' | sort -n 
+# List all users under /home
+exec ls /home/ | sed 's/\([0-9]\+\).*/\1/g' | sort -n
 
+# As of cPanel & WHM Version 11.38, system administrators can  remove all bind mounts for a particular user with the following command  (replace username with the cPanel user's name):
+/usr/local/cpanel/3rdparty/bin/perl -MCpanel::Filesys::Virtfs -e 'Cpanel::Filesys::Virtfs::clean_user_virtfs("username");'
 
- As of cPanel & WHM Version 11.38, system administrators can  remove all bind mounts for a particular user with the following command  (replace username with the cPanel user's name):    
-
-	/usr/local/cpanel/3rdparty/bin/perl -MCpanel::Filesys::Virtfs -e 'Cpanel::Filesys::Virtfs::clean_user_virtfs("username");'
-
-Look for files uploaded/POSTed to a users account
-
-	grep POST /etc/httpd/domlogs/cpaneluser/*
+# Look for files uploaded/POSTed to a users account
+grep POST /etc/httpd/domlogs/cpaneluser/*
