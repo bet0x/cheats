@@ -1,0 +1,8 @@
+# SoftLayer_Virtual_Guest
+## getBillingItem basic
+
+curl --user "$SOFTLAYER_USERNAME:$SOFTLAYER_API_KEY" -sk 'https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/<VSI>/getBillingItem.json' | python -m json.tool
+
+## getBillingItem with object masks (cost to date)
+curl --user "$SOFTLAYER_USERNAME:$SOFTLAYER_API_KEY" -sk https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/<VSI>/getBillingItem?objectMask=mask[hoursUsed,hourlyRecurringFee,currentHourlyCharge,invoiceItems[recurringFee,hourlyRecurringFee,createDate]]
+
