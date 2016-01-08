@@ -6,3 +6,8 @@ curl --user "$SOFTLAYER_USERNAME:$SOFTLAYER_API_KEY" -sk 'https://api.softlayer.
 ## getBillingItem with object masks (cost to date)
 curl --user "$SOFTLAYER_USERNAME:$SOFTLAYER_API_KEY" -sk https://api.softlayer.com/rest/v3/SoftLayer_Virtual_Guest/<VSI>/getBillingItem?objectMask=mask[hoursUsed,hourlyRecurringFee,currentHourlyCharge,invoiceItems[recurringFee,hourlyRecurringFee,createDate]]
 
+## Curl to order a VSI with metadata and an sshkey specified 
+'{"parameters":[{"blockDevices":[{"device":0,"diskImage":{"capacity":"100"}}],"userData":[{"value":"DATA"}],"sshKeys":[{"id":$KEY_ID}],"datacenter"{"name":"hou02"},"domain":"example.com","hourlyBillingFlag":true,"localDiskFlag":false,"maxMemory":"2","hostname":"apitest","startCpus":"2","operatingSystemReferenceCode":"UBUNTU_LATEST_64"}]}'
+
+## Get all VSI's on an account. Just need account ID
+curl -s -k -u https://$api_user:$api_key@api.softlayer.com/rest/v3/SoftLayer_User_Customer/ACCOUNT_ID/getVirtualGuests?objectMask=mask[id,blockDevices[id,diskImage[id,capacity]]]
