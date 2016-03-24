@@ -1,0 +1,8 @@
+# Bluemix logon
+bx login -u USERNAME -p PASSWORD -o ORG -s SPACE
+
+# Bluemix set api endpoint
+bx api ENDPOINT (api.eu-gb.bluemix.net or api.ng.bluemix.net)
+
+# Bind a domain to an app
+cf map-route APPNAME DOMAIN
