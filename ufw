@@ -11,5 +11,8 @@ ufw allow ssh
 # Allow specific protocal on port
 ufw allow 3333/tcp
 
+# Allow port from specific IP
+ufw allow from 192.168.1.215 proto udp to any port 88
+#
 
 [UFW Examples](https://www.digitalocean.com/community/articles/how-to-setup-a-firewall-with-ufw-on-an-ubuntu-and-debian-cloud-server)
