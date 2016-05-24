@@ -1,0 +1,8 @@
+# Pip without sudo 
+pip install --user "$@"
+
+# Gem without sudo 
+gem install --user "$@"
+
+# Update a file with dos line endings to unix line endings in vim 
+:set fileformat=unix
