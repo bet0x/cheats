@@ -6,3 +6,6 @@ gem install --user "$@"
 
 # Update a file with dos line endings to unix line endings in vim 
 :set fileformat=unix
+
+# Atom open files in hidden dirs
+File > Open > Cmd + Shift + .
